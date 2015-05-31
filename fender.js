@@ -194,8 +194,8 @@ module.exports = function(grunt, config) {
      * Register Grunt aliases.
      */
 
-        // > grunt
-        // Build for development & watch for changes.
+    // > grunt
+    // Build for development & watch for changes.
     grunt.registerTask('default', ['build:debug', 'watch']);
 
     // > grunt build
