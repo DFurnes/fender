@@ -18,6 +18,7 @@ module.exports = function(grunt, config) {
         assets: ['assets/**/*'],
         stylesheetsDir: 'src/',
         stylesheets: ['<%= pkg.name %>.scss'],
+        scriptsDir: 'src/',
         scripts: {},
         output: 'dist/',
         options: {
@@ -31,7 +32,7 @@ module.exports = function(grunt, config) {
     config = _.defaults(defaultConfig, config);
 
     // Configure Grunt tasks
-    var gruntConfig = {
+    grunt.initConfig({
 
         /**
          * Load settings from package.json.
@@ -174,21 +175,20 @@ module.exports = function(grunt, config) {
          */
         watch: {
             sass: {
-                files: config.stylesheets,
+                files: config.stylesheetsDir + '**/*.scss',
                 tasks: ["sass:debug", "postcss:debug"]
             },
             js: {
-                files: config.scripts,
-                tasks: ["webpack:debug", "jshint"]
+                files: config.scriptsDir + '**/*.js',
+                tasks: ["webpack:debug"]
             },
             assets: {
                 files: config.assets,
                 tasks: ["copy:assets"]
             }
         }
-    };
+    });
 
-    grunt.initConfig(gruntConfig);
 
     /**
      * Register Grunt aliases.
