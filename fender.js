@@ -1,11 +1,13 @@
 'use strict';
 
 var webpack = require('webpack');
-var _ = require('lodash');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
+var _ = require('lodash');
 
 
 module.exports = function(grunt, overrides) {
+
+    overrides = overrides || {};
 
     // Load Fender's bundled Grunt plugins
     var cwd = process.cwd();
