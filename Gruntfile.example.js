@@ -28,7 +28,7 @@ module.exports = function(grunt) {
       // Plugin options:
       options: {
           // Default autoprefixer browser support
-          autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1']
+          autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1'],
 
           // Default Babel transpiler options
           babel: {optional: 'es7.classProperties'}
