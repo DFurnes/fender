@@ -13,18 +13,10 @@ To get started, install Grunt and Fender in your project:
 
 Then, simply call Fender from your Gruntfile:
 ```js
-'use strict';
-
 var fender = require('fender');
 
 module.exports = function(grunt) {
-
-  /**
-   * Use Fender for nice and easy builds.
-   * @see http://npmjs.com/fender
-   */
   fender(grunt);
-
 };
 
 ```
