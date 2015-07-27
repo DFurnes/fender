@@ -2,10 +2,12 @@
 
 var webpack = require('webpack');
 var _ = require('lodash');
+var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 
 module.exports = function(grunt, config) {
-    // Temporarily switch to fender directory, so we can load Grunt plugins...
+
+    // Load Fender's bundled Grunt plugins
     var cwd = process.cwd();
     process.chdir(__dirname);
     require('load-grunt-tasks')(grunt);
@@ -15,18 +17,17 @@ module.exports = function(grunt, config) {
 
     // Default settings
     var defaultConfig = {
-        assets: ['assets/**/*'],
-        stylesheetsDir: 'src/',
-        stylesheets: ['<%= pkg.name %>.scss'],
-        scriptsDir: 'src/',
-        scripts: {},
         output: 'dist/',
+        assets: ['assets/**/*'],
+        bundles: { /* see below */ },
+        styleBundle: pkg.name + '.css',
         options: {
-            autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1']
+            autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1'],
+            babel: {optional: 'es7.classProperties'}
         }
     };
 
-    defaultConfig.scripts[pkg.name] = './src/<%= pkg.name %>.js';
+    defaultConfig.bundles[pkg.name] = './src/<%= pkg.name %>.js';
 
     // Override defaults where necessary
     config = _.defaults(defaultConfig, config);
@@ -47,86 +48,21 @@ module.exports = function(grunt, config) {
         },
 
         /**
-         * Copy assets into `dist/` directory.
-         */
-        copy: {
-            assets: {
-                files: [
-                    {expand: true, src: [config.assets], dest: config.output}
-                ]
-            }
-        },
-
-        /**
-         * Pre-process CSS with LibSass.
-         */
-        sass: {
-            // On production builds, minify and remove comments.
-            prod: {
-                files: [{
-                    expand: true,
-                    cwd: config.stylesheetsDir,
-                    src: config.stylesheets,
-                    dest: config.output,
-                    ext: '.css'
-                }],
-                options: {
-                    outputStyle: 'compressed'
-                }
-            },
-
-            // On development builds, include source maps & do not minify.
-            debug: {
-                files: [{
-                    expand: true,
-                    cwd: config.stylesheetsDir,
-                    src: config.stylesheets,
-                    dest: config.output,
-                    ext: '.css'
-                }],
-                options: {
-                    sourceMap: true
-                }
-            }
-        },
-
-        /**
-         * Post-process CSS with PostCSS.
+         * Build JavaScript with Webpack.
+         *
+         * JavaScript files are processed by Babel to compile ES6 (and optionally ES7)
+         * into ES5 which can be run natively in current browsers.
          *
          * We use Autoprefixer to automatically add vendor-prefixes for appropriate
          * browsers. We use CSS-MQPacker to concatenate all media queries at the
          * end of our built stylesheets.
-         */
-        postcss: {
-            options: {
-                processors: [
-                    require('autoprefixer-core')({
-                        browsers: config.options.autoprefixer
-                    }),
-                    require('css-mqpacker').postcss
-                ]
-            },
-
-            // On production builds, omit source maps.
-            prod: {
-                src: [config.output + '*.css'],
-                options: {
-                    map: false
-                }
-            },
-
-            // On development builds, include source maps.
-            debug: {
-                src: [config.output + '*.css']
-            }
-        },
-
-        /**
-         * Build JavaScript with Webpack.
+         *
+         * Assets required in scripts or stylesheets are processed by Webpack and either
+         * copied to dist directory, or inlined if under ~8kb.
          */
         webpack: {
             options: {
-                entry: config.scripts,
+                entry: config.bundles,
                 output: {
                     path: config.output,
                     filename: "[name].js"
@@ -136,8 +72,29 @@ module.exports = function(grunt, config) {
                 },
                 module: {
                     loaders: [
-                        { test: /\.js$/, exclude: /node_modules/, loader: 'babel-loader'}
+                        {
+                            test: /\.js$/,
+                            exclude: /node_modules/,
+                            loader: 'babel-loader',
+                            query: config.options.babel
+                        },
+                        {
+                            test: /\.scss$/,
+                            loader: ExtractTextPlugin.extract('css-loader?sourceMap!postcss-loader!sass-loader?sourceMap')
+                        },
+                        {
+                            test: /\.(png|jpg|eot|gif|woff|svg|ttf)$/,
+                            loader: 'url-loader?limit=8192'
+                        }
                     ]
+                },
+                postcss: function() {
+                    return [
+                        require('autoprefixer-core')({
+                            browsers: config.options.autoprefixer
+                        }),
+                        require('css-mqpacker').postcss
+                    ];
                 }
             },
 
@@ -154,39 +111,28 @@ module.exports = function(grunt, config) {
                             drop_debugger: true,
                             dead_code: true
                         }
-                    })
+                    }),
+                    new ExtractTextPlugin(config.styleBundle)
                 ]
             },
 
-            // On development builds, generate source maps & set debug flags
-            debug: {
+            // In development, generate source maps & set debug flags
+            dev: {
                 devtool: '#inline-source-map',
                 plugins: [
                     new webpack.DefinePlugin({
                         DEBUG: true,
                         PRODUCTION: false
-                    })
-                ]
-            }
-        },
+                    }),
+                    new ExtractTextPlugin(config.styleBundle)
+                ],
 
-        /**
-         * Watch files for changes, and trigger relevant tasks.
-         */
-        watch: {
-            sass: {
-                files: config.stylesheetsDir + '**/*.scss',
-                tasks: ["sass:debug", "postcss:debug"]
-            },
-            js: {
-                files: config.scriptsDir + '**/*.js',
-                tasks: ["webpack:debug"]
-            },
-            assets: {
-                files: config.assets,
-                tasks: ["copy:assets"]
+                // Keep Webpack task running & watch for changes.
+                keepalive: true,
+                watch: true
             }
         }
+
     });
 
 
@@ -196,15 +142,11 @@ module.exports = function(grunt, config) {
 
     // > grunt
     // Build for development & watch for changes.
-    grunt.registerTask('default', ['build:debug', 'watch']);
+    grunt.registerTask('default', ['clean:dist', 'webpack:dev']);
 
     // > grunt build
     // Build for production.
-    grunt.registerTask('build', ['clean:dist', 'copy:assets', 'sass:prod', 'postcss:prod', 'webpack:prod']);
-
-    // > grunt build:debug
-    // Build for development.
-    grunt.registerTask('build:debug', ['clean:dist', 'copy:assets', 'sass:debug', 'postcss:debug', 'webpack:debug']);
+    grunt.registerTask('build', ['clean:dist', 'webpack:prod']);
 
 };
 
