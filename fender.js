@@ -23,7 +23,9 @@ module.exports = function(grunt, config) {
         styleBundle: pkg.name + '.css',
         options: {
             autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1'],
-            babel: ['runtime', 'es7.classProperties']
+            babel: {
+                optional: ['runtime', 'es7.classProperties']
+            }
         }
     };
 
@@ -76,9 +78,7 @@ module.exports = function(grunt, config) {
                             test: /\.js$/,
                             exclude: /node_modules/,
                             loader: 'babel-loader',
-                            query: {
-                                optional: config.options.babel
-                            }
+                            query: config.options.babel
                         },
                         {
                             test: /\.scss$/,
