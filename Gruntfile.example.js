@@ -12,17 +12,17 @@ module.exports = function(grunt) {
    */
   fender(grunt, {
     // Scripts may be configured here, as a key-value pair of bundle name & file.
-    // Defaults to building `<package name>` from `./src/<package name>.js`.
+    // Defaults to building `<package name>` from `./src/<package name>.js`:
     bundles: {
       'custom_output_file.js': './src/custom_input_file.js'
     },
 
     // Any `*.scss` files required from script bundles will be packaged into a
     // separate style bundle named `<package_name>.css`. That name can optionally
-    // be overridden here.
+    // be overridden here:
     styleBundle: 'custom_style_output.css',
 
-    // Output directory for compiled stylesheets, scripts, and assets
+    // Output directory for compiled stylesheets, scripts, and assets:
     output: 'dist/',
 
     // Plugin options:
@@ -33,7 +33,10 @@ module.exports = function(grunt) {
       // Default Babel transpiler options
       babel: {
         optional: ['runtime', 'es7.classProperties']
-      }
+      },
+
+      // Set a configuration file for linting (or set to false to disable):
+      eslint: '.eslintrc',
     }
   });
 

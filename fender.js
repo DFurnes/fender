@@ -5,7 +5,7 @@ var _ = require('lodash');
 var ExtractTextPlugin = require("extract-text-webpack-plugin");
 
 
-module.exports = function(grunt, config) {
+module.exports = function(grunt, overrides) {
 
     // Load Fender's bundled Grunt plugins
     var cwd = process.cwd();
@@ -18,21 +18,21 @@ module.exports = function(grunt, config) {
     // Default settings
     var defaultConfig = {
         output: 'dist/',
-        assets: ['assets/**/*'],
         bundles: { /* see below */ },
         styleBundle: pkg.name + '.css',
         options: {
             autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1'],
             babel: {
                 optional: ['runtime', 'es7.classProperties']
-            }
+            },
+            eslintrc: __dirname + '/.eslintrc'
         }
     };
 
     defaultConfig.bundles[pkg.name] = './src/<%= pkg.name %>.js';
 
     // Override defaults where necessary
-    config = _.defaults(defaultConfig, config);
+    var config = _.defaultsDeep(overrides, defaultConfig);
 
     // Configure Grunt tasks
     grunt.initConfig({
@@ -121,6 +121,19 @@ module.exports = function(grunt, config) {
             // In development, generate source maps & set debug flags
             dev: {
                 devtool: '#inline-source-map',
+                eslint: {
+                    reset: (config.options.eslintrc ? false : true),
+                    configFile: (config.options.eslintrc ? config.options.eslintrc : __dirname + '/.disabled.eslintrc')
+                },
+                module: {
+                    preLoaders: [
+                        {
+                            test: /\.js$/,
+                            loader: "eslint-loader",
+                            exclude: /node_modules/
+                        }
+                    ],
+                },
                 plugins: [
                     new webpack.DefinePlugin({
                         DEBUG: true,
