@@ -22,19 +22,17 @@ module.exports = function(grunt, overrides) {
         output: 'dist/',
         bundles: { /* see below */ },
         styleBundle: pkg.name + '.css',
-        options: {
-            autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1'],
-            babel: {
-                optional: ['runtime', 'es7.classProperties']
-            },
-            eslintrc: __dirname + '/.eslintrc'
-        }
+        autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1'],
+        babel: {
+            optional: ['runtime', 'es7.classProperties']
+        },
+        eslintrc: __dirname + '/.eslintrc'
     };
 
     defaultConfig.bundles[pkg.name] = './src/<%= pkg.name %>.js';
 
     // Override defaults where necessary
-    var config = _.defaultsDeep(overrides, defaultConfig);
+    var config = _.defaults(overrides, defaultConfig);
 
     // Configure Grunt tasks
     grunt.initConfig({
@@ -80,7 +78,7 @@ module.exports = function(grunt, overrides) {
                             test: /\.js$/,
                             exclude: /node_modules/,
                             loader: 'babel-loader',
-                            query: config.options.babel
+                            query: config.babel
                         },
                         {
                             test: /\.scss$/,
@@ -95,7 +93,7 @@ module.exports = function(grunt, overrides) {
                 postcss: function() {
                     return [
                         require('autoprefixer-core')({
-                            browsers: config.options.autoprefixer
+                            browsers: config.autoprefixer
                         }),
                         require('css-mqpacker').postcss
                     ];
@@ -124,8 +122,8 @@ module.exports = function(grunt, overrides) {
             dev: {
                 devtool: '#inline-source-map',
                 eslint: {
-                    reset: (config.options.eslintrc ? false : true),
-                    configFile: (config.options.eslintrc ? config.options.eslintrc : __dirname + '/.disabled.eslintrc')
+                    reset: (config.eslintrc ? false : true),
+                    configFile: (config.eslintrc ? config.eslintrc : __dirname + '/.disabled.eslintrc')
                 },
                 module: {
                     preLoaders: [
