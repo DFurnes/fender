@@ -92,10 +92,10 @@ module.exports = function(grunt, overrides) {
                 },
                 postcss: function() {
                     return [
-                        require('autoprefixer-core')({
+                        require('autoprefixer')({
                             browsers: config.autoprefixer
                         }),
-                        require('css-mqpacker').postcss
+                        require('css-mqpacker')()
                     ];
                 }
             },
