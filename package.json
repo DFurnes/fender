@@ -22,6 +22,7 @@
     "css-loader": "^0.22.0",
     "css-mqpacker": "^4.0.0",
     "eslint": "^1.8.0",
+    "eslint-config-airbnb": "^0.1.0",
     "eslint-loader": "^1.1.1",
     "eslint-plugin-react": "^3.7.1",
     "extract-text-webpack-plugin": "^0.9.1",
