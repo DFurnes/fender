@@ -1,5 +1,0 @@
-{
-  // By default, use the Airbnb JavaScript style guide
-  // <https://github.com/airbnb/javascript>
-  "extends": "airbnb"
-}
