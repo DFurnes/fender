@@ -1,6 +1,6 @@
 {
   "name": "fender",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "An opinionated build system for front-end projects.",
   "repository": {
     "type": "git",
