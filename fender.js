@@ -21,7 +21,13 @@ module.exports = function(pkg, overrides) {
 
     // If package has a name, use that as default input/output bundle
     if(pkg.name) {
-        defaultConfig.bundles[pkg.name] = ['./src/' + pkg.name + '.js', 'webpack-dev-server/client?http://0.0.0.0:8080'];
+        defaultConfig.bundles[pkg.name] = ['./src/' + pkg.name + '.js'];
+    }
+
+    if(process.env.NODE_ENV !== 'production') {
+        _.map(defaultConfig.bundles, function(source) {
+            source.push('webpack-dev-server/client?http://0.0.0.0:8080');
+        })
     }
 
     // Override defaults where necessary
