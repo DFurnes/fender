@@ -75,6 +75,10 @@ module.exports = function(pkg, overrides) {
                 {
                     test: /\.(png|jpg|eot|gif|woff|svg|ttf)$/,
                     loader: 'url-loader?limit=8192'
+                },
+                {
+                    test: /\.json$/,
+                    loader: 'json-loader'
                 }
             ]
         },
