@@ -89,7 +89,10 @@ module.exports = function(pkg, overrides) {
                 }),
                 require('css-mqpacker')()
             ];
-        }
+        },
+        plugins: [
+            // ...
+        ]
     };
 
     // On production builds, minify & set production flags
@@ -120,6 +123,21 @@ module.exports = function(pkg, overrides) {
 
     // In development, generate source maps & watch for changes.
     if(environment !== 'production') {
+        // Modify first loader (JavaScript) to enable HMR... hackz.
+        webpackConfig.module.loaders[0].query = {
+            "plugins": [
+                ["react-transform", {
+                    "transforms": [{
+                        "transform": "react-transform-hmr",
+                        "imports": ["react"],
+                        "locals": ["module"]
+                    }]
+                }]
+            ]
+        };
+
+        webpackConfig.plugins.unshift(new webpack.HotModuleReplacementPlugin());
+
         webpackConfig.module.loaders.push({
             test: /\.css$/,
             loader: 'style-loader!css-loader?sourceMap!postcss-loader'
