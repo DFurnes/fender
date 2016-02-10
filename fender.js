@@ -3,7 +3,6 @@
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var fs = require('fs');
-var rimraf = require('rimraf');
 var _ = require('lodash');
 
 module.exports = function(pkg, overrides) {
@@ -32,15 +31,6 @@ module.exports = function(pkg, overrides) {
 
     // Override defaults where necessary
     var options = _.defaults(overrides, defaultConfig);
-
-    /**
-     * In production, clean output directory before starting.
-     * (In dev, assets are stored in memory via Webpack's dev server.)
-     */
-    if(environment === 'production') {
-      rimraf.sync('./' + options.output);
-      fs.mkdirSync('./' + options.output);
-    }
 
     /**
      * Configure Webpack to build scripts, styles, and other assets.
