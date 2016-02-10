@@ -60,7 +60,7 @@ module.exports = function(pkg, overrides) {
                 {
                     test: /\.js$/,
                     exclude: /node_modules/,
-                    loaders: ['babel-loader'],
+                    loader: 'babel-loader',
                 },
                 {
                     test: /\.(png|jpg|eot|gif|woff|svg|ttf)$/,
