@@ -1,6 +1,5 @@
 'use strict';
 
-var pkg = require('./package.json');
 var fender = require('fender');
 
 /**
@@ -9,7 +8,7 @@ var fender = require('fender');
  *
  * If using the default settings, the configuration object may be omitted!
  */
-module.exports = fender(pkg, {
+module.exports = fender({
   // Bundles may be configured like so, as a key-value pair of bundle name & file.
   // Defaults to building `<package name>` from `./src/<package name>.js`:
   bundles: {
@@ -23,11 +22,6 @@ module.exports = fender(pkg, {
   options: {
     // Default autoprefixer browser support
     autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1'],
-
-    // Default Babel transpiler options
-    babel: {
-      optional: ['runtime', 'es7.classProperties']
-    }
   }
 });
 

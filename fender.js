@@ -2,11 +2,13 @@
 
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var fs = require('fs');
 var _ = require('lodash');
 
-module.exports = function(pkg, overrides) {
+module.exports = function(overrides) {
     overrides = overrides || {};
+
+    // Load package.json
+    var pkg = JSON.parse(require('fs').readFileSync('./package.json', 'utf8'));
 
     // Read environment from current NODE_ENV
     var environment = process.env.NODE_ENV || 'development';
@@ -18,15 +20,9 @@ module.exports = function(pkg, overrides) {
         autoprefixer: ['last 4 versions', 'Firefox ESR', 'Opera 12.1'],
     };
 
-    // If package has a name, use that as default input/output bundle
+    // If package has a name, we'll use that as default input/output bundle name.
     if(pkg.name) {
         defaultConfig.bundles[pkg.name] = ['./src/' + pkg.name + '.js'];
-    }
-
-    if(process.env.NODE_ENV !== 'production') {
-        _.map(defaultConfig.bundles, function(source) {
-            source.push('webpack-dev-server/client?http://0.0.0.0:8080');
-        })
     }
 
     // Override defaults where necessary
@@ -49,7 +45,7 @@ module.exports = function(pkg, overrides) {
         entry: options.bundles,
         output: {
             path: options.output,
-            publicPath: '/',
+            publicPath: '/dist/',
             filename: '[name].js'
         },
         resolveLoader: {
@@ -69,6 +65,14 @@ module.exports = function(pkg, overrides) {
                 {
                     test: /\.json$/,
                     loader: 'json-loader'
+                },
+                {
+                    test: /\.css$/,
+                    loader: ExtractTextPlugin.extract('css-loader?sourceMap!postcss-loader')
+                },
+                {
+                    test: /\.scss$/,
+                    loader: ExtractTextPlugin.extract('css-loader?sourceMap!postcss-loader!sass-loader?sourceMap')
                 }
             ]
         },
@@ -81,63 +85,25 @@ module.exports = function(pkg, overrides) {
             ];
         },
         plugins: [
-            // ...
+            new ExtractTextPlugin('[name].css'),
         ]
     };
 
     // On production builds, minify & set production flags
     if(environment === 'production') {
-        webpackConfig.module.loaders.push({
-            test: /\.css$/,
-            loader: ExtractTextPlugin.extract('css-loader?sourceMap!postcss-loader')
-        });
-
-        webpackConfig.module.loaders.push({
-            test: /\.scss$/,
-            loader: ExtractTextPlugin.extract('css-loader?sourceMap!postcss-loader!sass-loader?sourceMap')
-        });
-
-        _.extend(webpackConfig, {
-            plugins: [
-                new ExtractTextPlugin('[name].css'),
-                new webpack.optimize.UglifyJsPlugin({
-                    compress: {
-                        drop_console: true,
-                        drop_debugger: true,
-                        dead_code: true
-                    }
-                }),
-            ]
-        });
+      webpackConfig.plugins.push(
+        new webpack.optimize.UglifyJsPlugin({
+          compress: {
+            drop_console: true,
+            drop_debugger: true,
+            dead_code: true,
+          },
+        })
+      );
     }
 
     // In development, generate source maps & watch for changes.
     if(environment !== 'production') {
-        // Modify first loader (JavaScript) to enable HMR... hackz.
-        webpackConfig.module.loaders[0].query = {
-            "plugins": [
-                ["react-transform", {
-                    "transforms": [{
-                        "transform": "react-transform-hmr",
-                        "imports": ["react"],
-                        "locals": ["module"]
-                    }]
-                }]
-            ]
-        };
-
-        webpackConfig.plugins.unshift(new webpack.HotModuleReplacementPlugin());
-
-        webpackConfig.module.loaders.push({
-            test: /\.css$/,
-            loader: 'style-loader!css-loader?sourceMap!postcss-loader'
-        });
-
-        webpackConfig.module.loaders.push({
-            test: /\.scss$/,
-            loader: 'style-loader!css-loader?sourceMap!postcss-loader!sass-loader?sourceMap'
-        });
-
         _.extend(webpackConfig, {
             devtool: '#inline-source-map',
             keepalive: true,
