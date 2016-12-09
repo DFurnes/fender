@@ -48,9 +48,6 @@ module.exports = function(overrides) {
             publicPath: '/dist/',
             filename: '[name].js'
         },
-        resolveLoader: {
-            modulesDirectories: ['node_modules/fender/node_modules']
-        },
         module: {
             loaders: [
                 {
